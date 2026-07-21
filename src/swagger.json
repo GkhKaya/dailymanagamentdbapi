@@ -1,0 +1,781 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Daily Management Express API",
+    "description": "Daily Management REST API documentation for mobile client and server integration.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3005",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Enter the Better Auth session token"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Verifies that the API server and database connection are working.",
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/api/auth/sign-in/email": {
+      "post": {
+        "summary": "Sign In with Email & Password",
+        "description": "Authenticates a user via Better Auth.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "test@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated successfully, returns session information."
+          }
+        }
+      }
+    },
+    "/api/auth/sign-up/email": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Registers a new user in the database using email and password.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "newuser@example.com" },
+                  "password": { "type": "string", "example": "password123" },
+                  "name": { "type": "string", "example": "John Doe" }
+                },
+                "required": ["email", "password", "name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Registered successfully."
+          }
+        }
+      }
+    },
+    "/api/accounts": {
+      "get": {
+        "summary": "Get all accounts",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of accounts"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an account",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Cash Wallet" },
+                  "type": { "type": "string", "enum": ["cash", "debit_card", "bank_account", "credit_card"], "example": "cash" },
+                  "balance": { "type": "number", "example": 1000 },
+                  "credit_card_details": {
+                    "type": "object",
+                    "properties": {
+                      "total_limit": { "type": "number" },
+                      "current_debt": { "type": "number" },
+                      "statement_day": { "type": "integer" },
+                      "payment_due_day": { "type": "integer" }
+                    }
+                  }
+                },
+                "required": ["name", "type", "balance"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created successfully"
+          }
+        }
+      }
+    },
+    "/api/accounts/{id}": {
+      "put": {
+        "summary": "Update an account",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Updated Wallet Name" },
+                  "balance": { "type": "number", "example": 1200 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Account updated successfully" }
+        }
+      },
+      "delete": {
+        "summary": "Delete an account",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "summary": "Get all categories",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of categories" }
+        }
+      },
+      "post": {
+        "summary": "Create a category",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Shopping" },
+                  "type": { "type": "string", "enum": ["income", "expense"], "example": "expense" },
+                  "icon": { "type": "string", "example": "cart" },
+                  "color": { "type": "string", "example": "#ef4444" }
+                },
+                "required": ["name", "type", "icon", "color"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Category created successfully" }
+        }
+      }
+    },
+    "/api/categories/{id}": {
+      "delete": {
+        "summary": "Delete a category",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/transactions": {
+      "get": {
+        "summary": "Get all transactions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of transactions" }
+        }
+      },
+      "post": {
+        "summary": "Create a transaction",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["income", "expense", "account_adjustment", "credit_card_payment", "debt_payment"], "example": "expense" },
+                  "amount": { "type": "number", "example": 150 },
+                  "date": { "type": "string", "format": "date-time", "example": "2026-07-21T10:00:00Z" },
+                  "description": { "type": "string", "example": "Weekly grocery shopping" },
+                  "category_id": { "type": "string", "example": "6a58e3ba24faae1d107d8b8b" },
+                  "account_id": { "type": "string", "example": "6a58e5577b7fde809fb38275" },
+                  "source": { "type": "string", "example": "manual" }
+                },
+                "required": ["type", "amount", "date", "description", "account_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Transaction created successfully" }
+        }
+      }
+    },
+    "/api/transactions/{id}": {
+      "put": {
+        "summary": "Update a transaction",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["income", "expense"] },
+                  "amount": { "type": "number" },
+                  "date": { "type": "string", "format": "date-time" },
+                  "description": { "type": "string" },
+                  "category_id": { "type": "string" },
+                  "account_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated successfully" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a transaction",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/debts": {
+      "get": {
+        "summary": "Get all debts",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of debts" }
+        }
+      },
+      "post": {
+        "summary": "Create a debt record",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "person_name": { "type": "string", "example": "Jane Doe" },
+                  "direction": { "type": "string", "enum": ["given", "taken"], "example": "given" },
+                  "amount": { "type": "number", "example": 250 },
+                  "date": { "type": "string", "format": "date-time", "example": "2026-07-21T00:00:00Z" },
+                  "due_date": { "type": "string", "format": "date-time", "example": "2026-08-21T00:00:00Z" }
+                },
+                "required": ["person_name", "direction", "amount", "date"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Debt created successfully" }
+        }
+      }
+    },
+    "/api/debts/{id}": {
+      "put": {
+        "summary": "Update a debt record",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "person_name": { "type": "string" },
+                  "direction": { "type": "string", "enum": ["given", "taken"] },
+                  "amount": { "type": "number" },
+                  "date": { "type": "string", "format": "date-time" },
+                  "due_date": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated successfully" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a debt record",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/debts/{id}/payments": {
+      "post": {
+        "summary": "Add a payment to a debt",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": { "type": "number", "example": 50 },
+                  "date": { "type": "string", "format": "date-time", "example": "2026-07-21T10:00:00Z" },
+                  "note": { "type": "string", "example": "First installment" },
+                  "transaction_id": { "type": "string" }
+                },
+                "required": ["amount", "date"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Payment added successfully" }
+        }
+      }
+    },
+    "/api/subscriptions": {
+      "get": {
+        "summary": "Get all subscriptions",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of subscriptions" }
+        }
+      },
+      "post": {
+        "summary": "Create a subscription",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "Netflix" },
+                  "amount": { "type": "number", "example": 99.9 },
+                  "category_id": { "type": "string", "example": "6a58e3ba24faae1d107d8b8b" },
+                  "account_id": { "type": "string", "example": "6a58e5577b7fde809fb38275" },
+                  "frequency": { "type": "string", "enum": ["monthly"], "example": "monthly" },
+                  "billing_day": { "type": "integer", "minimum": 1, "maximum": 31, "example": 15 },
+                  "next_run_date": { "type": "string", "format": "date-time", "example": "2026-08-15T00:00:00Z" },
+                  "is_active": { "type": "boolean", "default": true }
+                },
+                "required": ["name", "amount", "category_id", "account_id", "frequency", "billing_day", "next_run_date"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Subscription created successfully" }
+        }
+      }
+    },
+    "/api/subscriptions/{id}": {
+      "put": {
+        "summary": "Update a subscription",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "amount": { "type": "number" },
+                  "category_id": { "type": "string" },
+                  "account_id": { "type": "string" },
+                  "frequency": { "type": "string", "enum": ["monthly"] },
+                  "billing_day": { "type": "integer" },
+                  "next_run_date": { "type": "string", "format": "date-time" },
+                  "is_active": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated successfully" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a subscription",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/daily-logs": {
+      "get": {
+        "summary": "Get daily log by date",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "date", "in": "query", "required": true, "schema": { "type": "string" }, "example": "2026-07-21" }
+        ],
+        "responses": {
+          "200": { "description": "Returns daily log details" }
+        }
+      }
+    },
+    "/api/daily-logs/meals": {
+      "post": {
+        "summary": "Add a food entry to a daily log meal",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "example": "2026-07-21" },
+                  "type": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"], "example": "breakfast" },
+                  "food_name": { "type": "string", "example": "Egg" },
+                  "serving_description": { "type": "string", "example": "1 adet" },
+                  "quantity": { "type": "number", "example": 2 },
+                  "calories": { "type": "number", "example": 140 },
+                  "protein_g": { "type": "number", "example": 12 },
+                  "carbs_g": { "type": "number", "example": 0 },
+                  "fat_g": { "type": "number", "example": 10 },
+                  "fatsecret_food_id": { "type": "string" },
+                  "save_as_recipe": { "type": "boolean", "default": false }
+                },
+                "required": ["date", "type", "food_name", "serving_description", "quantity", "calories", "protein_g", "carbs_g", "fat_g"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Meal added successfully" }
+        }
+      },
+      "put": {
+        "summary": "Update a meal entry in a daily log",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "example": "2026-07-21" },
+                  "entry_id": { "type": "string" },
+                  "type": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"] },
+                  "old_type": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"] },
+                  "food_name": { "type": "string" },
+                  "serving_description": { "type": "string" },
+                  "quantity": { "type": "number" },
+                  "calories": { "type": "number" },
+                  "protein_g": { "type": "number" },
+                  "carbs_g": { "type": "number" },
+                  "fat_g": { "type": "number" }
+                },
+                "required": ["date", "entry_id", "type", "old_type", "food_name", "serving_description", "quantity", "calories", "protein_g", "carbs_g", "fat_g"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Meal entry updated successfully" }
+        }
+      }
+    },
+    "/api/daily-logs/meals/delete": {
+      "post": {
+        "summary": "Delete a food entry from a daily log meal",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "example": "2026-07-21" },
+                  "entry_id": { "type": "string" },
+                  "type": { "type": "string", "enum": ["breakfast", "lunch", "dinner", "snack"], "example": "breakfast" }
+                },
+                "required": ["date", "entry_id", "type"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Meal entry deleted successfully" }
+        }
+      }
+    },
+    "/api/daily-logs/sleep": {
+      "post": {
+        "summary": "Update daily log sleep information",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "example": "2026-07-21" },
+                  "duration_minutes": { "type": "integer", "example": 480 },
+                  "calories_burned": { "type": "number", "example": 50 },
+                  "quality": { "type": "string", "example": "Good" }
+                },
+                "required": ["date", "duration_minutes", "calories_burned"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sleep data updated successfully" }
+        }
+      }
+    },
+    "/api/daily-logs/exercises": {
+      "post": {
+        "summary": "Add an exercise entry to a daily log",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "example": "2026-07-21" },
+                  "name": { "type": "string", "example": "Running" },
+                  "duration_minutes": { "type": "integer", "example": 30 },
+                  "calories_burned": { "type": "number", "example": 300 },
+                  "source": { "type": "string", "enum": ["manual", "estimated"], "example": "manual" }
+                },
+                "required": ["date", "name", "duration_minutes", "calories_burned", "source"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Exercise entry added successfully" }
+        }
+      }
+    },
+    "/api/daily-logs/exercises/delete": {
+      "post": {
+        "summary": "Delete an exercise entry from a daily log",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "example": "2026-07-21" },
+                  "entry_id": { "type": "string" }
+                },
+                "required": ["date", "entry_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Exercise entry deleted successfully" }
+        }
+      }
+    },
+    "/api/weight-logs": {
+      "get": {
+        "summary": "Get all weight logs",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of weight logs" }
+        }
+      },
+      "post": {
+        "summary": "Log user weight",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "format": "date", "example": "2026-07-21" },
+                  "weight_kg": { "type": "number", "example": 78.5 },
+                  "note": { "type": "string", "example": "Morning weight" }
+                },
+                "required": ["date", "weight_kg"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Weight log recorded successfully" }
+        }
+      }
+    },
+    "/api/weight-logs/{id}": {
+      "delete": {
+        "summary": "Delete a weight log entry",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/saved-foods": {
+      "get": {
+        "summary": "Get all saved foods",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of saved foods" }
+        }
+      },
+      "post": {
+        "summary": "Create a saved food",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "food_name": { "type": "string", "example": "Custom Egg Salad" },
+                  "serving_description": { "type": "string", "example": "1 porsiyon" },
+                  "quantity": { "type": "number", "example": 1 },
+                  "fatsecret_food_id": { "type": "string" },
+                  "calories": { "type": "number", "example": 220 },
+                  "protein_g": { "type": "number", "example": 14 },
+                  "carbs_g": { "type": "number", "example": 2 },
+                  "fat_g": { "type": "number", "example": 18 }
+                },
+                "required": ["food_name", "serving_description", "quantity", "calories", "protein_g", "carbs_g", "fat_g"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Saved food created successfully" }
+        }
+      }
+    },
+    "/api/saved-foods/{id}": {
+      "delete": {
+        "summary": "Delete a saved food entry",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Deleted successfully" }
+        }
+      }
+    },
+    "/api/users/profile": {
+      "get": {
+        "summary": "Get user profile details",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "User profile data" }
+        }
+      },
+      "put": {
+        "summary": "Update user profile details",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "John Doe" },
+                  "birth_date": { "type": "string", "format": "date-time" },
+                  "gender": { "type": "string", "enum": ["male", "female", "other"] },
+                  "height_cm": { "type": "number" },
+                  "activity_level": { "type": "string", "enum": ["sedentary", "light", "moderate", "active", "very_active"] },
+                  "bmr_formula": { "type": "string", "enum": ["mifflin_st_jeor", "harris_benedict"] },
+                  "target_weight_kg": { "type": "number" },
+                  "daily_calorie_goal": { "type": "number" },
+                  "currency": { "type": "string", "example": "TRY" },
+                  "timezone": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Profile updated successfully" }
+        }
+      }
+    }
+  }
+}
