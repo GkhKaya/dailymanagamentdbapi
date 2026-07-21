@@ -5,7 +5,6 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { toNodeHandler } from "better-auth/node";
 
 import { connectDB } from "./config/db";
 import { auth } from "./config/auth";
@@ -44,7 +43,18 @@ app.use(cors({
 }));
 
 // Better Auth Route Handler (MUST be mounted BEFORE express.json())
-app.all("/api/auth/*", toNodeHandler(auth));
+let authHandler: any = null;
+app.all("/api/auth/*", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!authHandler) {
+      const { toNodeHandler } = await import("better-auth/node");
+      authHandler = toNodeHandler(auth);
+    }
+    return authHandler(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Express JSON body parser (mounted AFTER Better Auth to prevent hanging)
 app.use(express.json());
