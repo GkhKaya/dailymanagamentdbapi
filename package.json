@@ -2,10 +2,10 @@
   "name": "dailymanagamentdbapi",
   "version": "1.0.0",
   "description": "Daily Management Express API",
-  "main": "dist/server.js",
+  "main": "dist/server.mjs",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "build": "esbuild src/server.ts --bundle --platform=node --target=node22 --outfile=dist/server.mjs --format=esm --packages=external",
+    "start": "node dist/server.mjs",
     "dev": "nodemon src/server.ts"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^20.12.7",
     "@types/swagger-ui-express": "^4.1.8",
+    "esbuild": "^0.28.1",
     "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
